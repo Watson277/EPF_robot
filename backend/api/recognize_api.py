@@ -17,12 +17,15 @@ async def recognize(file: UploadFile = File(...)):
             raise HTTPException(status_code=400, detail="Empty file uploaded")
 
         temp_path = save_temp_audio(contents)
+        print(" Path: ", temp_path)
         user_text = whisper_module.transcribe_audio(temp_path)
-        reply_text = chat.get_llm_reply(user_text)
-
         await process_voice_text(user_text)
+        print("User text: ", user_text)
+        reply_text = chat.get_llm_reply(user_text)
+        print("模型回复内容：", repr(reply_text))  # Print    
 
         return JSONResponse(content={"text": user_text, "reply": reply_text})
+        print("Response returned")
 
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})

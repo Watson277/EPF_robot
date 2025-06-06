@@ -68,7 +68,7 @@
 - Runs as a separate thread or process, continuously monitoring button states.
 - Updates system state or notifies other modules as needed.
 
-### 3.5 Whisper Speech Recognition Module (`whisper_module.py`)
+### 3.5 Whisper Speech Recognition Module (`modules/whisper_module.py`)
 
 - Loads the Whisper ASR model to convert audio input into text commands.
 - Audio input can be from microphone recordings saved as temporary files.
