@@ -2,6 +2,7 @@ from fastapi import APIRouter, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse
 from modules import whisper_module, chat
 from utils.audio_utils import save_temp_audio
+from utils.recognize_remote import recognize_remote
 
 from modules.voice_detection import process_voice_text
 
@@ -18,7 +19,10 @@ async def recognize(file: UploadFile = File(...)):
 
         temp_path = save_temp_audio(contents)
         print(" Path: ", temp_path)
-        user_text = whisper_module.transcribe_audio(temp_path)
+
+        # user_text = whisper_module.transcribe_audio(temp_path)
+        user_text = recognize_remote(temp_path)
+
         await process_voice_text(user_text)
         print("User text: ", user_text)
         reply_text = chat.get_llm_reply(user_text)
