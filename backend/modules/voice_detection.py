@@ -1,7 +1,9 @@
 import asyncio
 from server import handle_message  # 假设你的 handle_message 在 websocket_server.py
+import json
 
 async def process_voice_text(user_text: str):
+    print("Start processing text")
     # 构造模拟消息（前端格式）
     fake_message = json.dumps({
         "type": "text",

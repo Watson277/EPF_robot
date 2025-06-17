@@ -6,7 +6,9 @@ import uvicorn
 from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 
+from api.battery import router as battery_router
 from api.recognize_api import router as recognize_router
+from api.time import router as time_router 
 from control import movement, button, adc
 import server  # 引用你写的 WebSocket 服务模块（server.py）
 
@@ -21,6 +23,9 @@ app.add_middleware(
 
 # 挂载 API 路由
 app.include_router(recognize_router)
+app.include_router(battery_router)
+app.include_router(time_router)
+
 
 # WebSocket 端点（可以删去，改由 server.py 管理）
 @app.websocket("/ws")

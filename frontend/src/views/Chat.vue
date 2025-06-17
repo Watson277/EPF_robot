@@ -52,25 +52,30 @@ async function sendMessage() {
   loading.value = true
   aiResponse.value = ''
   
-  try {
-    const res = await fetch('http://localhost:1234/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-        // 如果你配置了 API Key，可以加上 Authorization
-        // 'Authorization': 'Bearer YOUR_API_KEY'
-      },
-      body: JSON.stringify({
-        model: 'tinyllama-1.1b-chat-v1.0',  // 替换成你在 LM Studio 里看到的模型名称
-        messages: [
-          { role: 'user', content: userMessage.value }
-        ],
-        temperature: 0.7
-      })
-    })
-    
-    const data = await res.json()
-    aiResponse.value = data.choices?.[0]?.message?.content || 'AI 无响应'
+  // try {
+    // const res = await fetch("http://10.2.60.55:11434/api/generate", {
+    //   method: 'POST',
+    //   headers: {
+    //     'Content-Type': 'application/json'
+    //   },
+    //   body: JSON.stringify({
+    //       model: "phi",
+    //       prompt: userMessage.value,
+    //       stream: false,
+    //     }),
+    // })
+    try {
+        const url = `http://10.2.60.163:8000/reponse?prompt=${encodeURIComponent(userMessage.value)}`
+        const res = await fetch(url)
+        
+        if (!res.ok) {
+          throw new Error(`HTTP 错误：${res.status}`)
+        }
+
+        aiResponse.value = await res.text()  // 注意这里是 text()，不是 json()
+
+        // const data = await res.json()
+        // aiResponse.value = data.response || 'AI 无响应'
     
   } catch (error) {
     console.error(error)
