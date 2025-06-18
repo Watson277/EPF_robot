@@ -11,7 +11,7 @@
   
   async function fetchTime() {
     try {
-      const res = await fetch('http://<树莓派IP>:8000/time')  // 替换成你自己的 IP
+      const res = await fetch('http://localhost:8000/time')  // 替换成你自己的 IP
       const data = await res.json()
       currentTime.value = data.time
     } catch (e) {
