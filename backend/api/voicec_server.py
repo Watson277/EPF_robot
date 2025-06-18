@@ -1,3 +1,4 @@
+# speech_bot.py
 import requests
 import pyttsx3
 import speech_recognition as sr
@@ -5,9 +6,10 @@ import json
 import os
 import sys
 import time
-import dialog_state
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from control import avancer2s as mv
+import dialog_state  # ✅ 导入状态模块
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'control')))
+from avancer2s import avancer, reculer  # ✅ 替换你的 mv 控制模块路径
 
 # Initialisation voix
 engine = pyttsx3.init()
@@ -16,11 +18,11 @@ engine.setProperty('voice', voices[29].id)
 
 # Micro et reconnaissance
 r = sr.Recognizer()
-url = 'http://10.2.60.80:8000/reponse'  # 🔧 mets ici l'IP correcte si ce n'est pas en local
+url = 'http://10.2.60.80:8000/reponse'  # ✅ 替换成你的大模型 API 地址
 
 function_map = {
-    "avancer": mv.avancer,
-    "reculer": mv.reculer
+    "avancer": avancer,
+    "reculer": reculer
 }
 
 def run_speech_once():
@@ -31,6 +33,10 @@ def run_speech_once():
     try:
         text = r.recognize_google(audio, language="fr-FR")
         print("✅ Texte reconnu :", text)
+
+        # ✅ 更新问题内容
+        dialog_state.prompt_text = text
+
     except sr.UnknownValueError:
         print("❌ Impossible de comprendre l'audio.")
         return
@@ -78,20 +84,27 @@ Texte utilisateur : {text}
     if data["type"] == "function_call":
         func = data["function"]
         args = data["arguments"]
+
+        # ✅ 更新回答内容为动作说明
+        dialog_state.response_text = f"🦾 Commande : {func}({args})"
+
         if func in function_map:
             function_map[func](**args)
         else:
             print("❓ Fonction inconnue :", func)
+
     elif data["type"] == "answer":
         print("💬 Réponse :", data["content"])
+
+        # ✅ 更新回答内容
+        dialog_state.response_text = data["content"]
+
         engine.setProperty('rate', engine.getProperty('rate') - 50)
         engine.setProperty('volume', max(0.3, engine.getProperty('volume') - 0.7))
         engine.say(data["content"])
         engine.runAndWait()
     else:
         print("⚠️ Réponse inattendue :", data)
-    
-    
 
 
 # Appel unique
