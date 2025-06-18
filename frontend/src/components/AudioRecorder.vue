@@ -75,9 +75,26 @@ onMounted(() => {
   background-color: #ff1a1a;
 }
 
+.dialog-box {
+  padding: 1.5rem;
+  background-color: #f0f4f8;
+  border-radius: 16px;
+  max-width: 700px;
+  margin: 2rem auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  font-size: 1.4rem; /* ⬅️ 放大整体字体 */
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
+}
+
+.prompt {
+  color: #0056b3;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
 .reply {
-  font-size: 1.2rem;
-  max-width: 600px;
-  text-align: center;
+  color: #0a7f49;
+  font-weight: 500;
 }
 </style>
