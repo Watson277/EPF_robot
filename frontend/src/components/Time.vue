@@ -15,7 +15,7 @@
       const data = await res.json()
       currentTime.value = data.time
     } catch (e) {
-      currentTime.value = '无法获取时间'
+      currentTime.value = 'Cannot obtain time information'
     }
   }
   
