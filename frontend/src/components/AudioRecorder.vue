@@ -3,88 +3,36 @@
     <h2 class="title">🎙️ Start the conversation</h2>
     <button @click="startRecording" :disabled="recording" class="btn">🎙️ Start</button>
     <button @click="stopRecording" :disabled="!recording" class="btn">⏹️ Stop</button>
-    <div v-if="reply" class="reply">🤖 Reply: {{ reply }}</div>
+    <div class="dialog-box">
+      <div v-if="prompt" class="prompt">🧑 You: {{ prompt }}</div>
+      <div v-if="reply" class="reply">🤖 Reply: {{ reply }}</div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted } from 'vue';
 
-const recording = ref(false)
-const reply = ref('')
-let mediaRecorder, audioChunks = []
-// 连接 WebSocket
-const ws = new WebSocket("ws://localhost:8765")
+const prompt = ref('');
+const reply = ref('');
 
-ws.onopen = () => {
-  console.log("WebSocket connected")
-}
-ws.onmessage = (event) => {
-  console.log("Message from server:", event.data)
-}
-
-const socket = ref<WebSocket | null>(null);
-
-onBeforeUnmount(() => {
+const fetchDialog = async () => {
   try {
-    if (socket.value && socket.value.readyState === WebSocket.OPEN) {
-      socket.value.close();
-    }
-  } catch (error) {
-    console.error("Error during socket cleanup:", error);
+    const res = await fetch('http://10.2.60.80:8000/latest');  // ⚠️ 请确保 IP 和端口正确
+    const data = await res.json();
+    prompt.value = data.prompt || '';
+    reply.value = data.response || '';
+  } catch (e) {
+    console.error('❌ 获取对话失败：', e);
   }
+};
+
+onMounted(() => {
+  fetchDialog(); // 初次加载
+  setInterval(fetchDialog, 2000); // 每2秒刷新一次
 });
-
-
-const startRecording = async () => {
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-  mediaRecorder = new MediaRecorder(stream)
-  mediaRecorder.ondataavailable = e => audioChunks.push(e.data)
-  mediaRecorder.onstop = sendAudio
-  audioChunks = []
-  mediaRecorder.start()
-  recording.value = true
-}
-
-const stopRecording = () => {
-  mediaRecorder.stop()
-  recording.value = false
-}
-
-const speakText = (text) => {
-  if ('speechSynthesis' in window) {
-    const utterance = new SpeechSynthesisUtterance(text)
-    utterance.lang = 'en-US'
-    utterance.rate = 1
-    utterance.pitch = 1
-    speechSynthesis.speak(utterance)
-  }
-}
-
-// 修改 sendAudio 函数，转录完成后通过 WebSocket 发文本
-const sendAudio = async () => {
-  const blob = new Blob(audioChunks, { type: 'audio/webm' })
-  const formData = new FormData()
-  formData.append('file', blob, 'audio.webm')
-
-  const res = await fetch('http://localhost:8000/recognize', {
-    method: 'POST',
-    body: formData
-  })
-  const data = await res.json()
-  reply.value = data.reply
-
-  // 朗读
-  speakText(data.reply)
-
-  // 通过 WebSocket 发送转录文本给 server.py 处理
-  if (ws.readyState === WebSocket.OPEN) {
-    ws.send(JSON.stringify({ type: "text", content: data.text }))
-  }
-}
-
-
 </script>
+
 
 <style scoped>
 .container {
