@@ -25,7 +25,7 @@
       percent.value = data.percentage;
       voltage.value = data.voltage.toFixed(2);
     } catch (err) {
-      console.error('获取电池信息失败:', err);
+      console.error('Failed to obtain battery level:', err);
     }
   };
   
