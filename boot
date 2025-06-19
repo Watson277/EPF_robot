@@ -51,6 +51,7 @@ mkdir -p /home/epf/.config/lxsession/LXDE-pi
 nano /home/epf/.config/lxsession/LXDE-pi/autostart
 
 @chromium-browser --noerrdialogs --disable-infobars --kiosk http://localhost:5173
+@bash -c "sleep 20 && chromium-browser --noerrdialogs --disable-infobars --kiosk http://localhost:5173"
 
 
 
