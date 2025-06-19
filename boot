@@ -47,8 +47,11 @@ sudo systemctl disable frontend.service
 sudo systemctl disable backend.service
 
 # open the browser
-nano ~/.config/lxsession/LXDE-pi/autostart
-@chromium-browser --noerrdialogs --kiosk http://localhost:5173
+mkdir -p /home/epf/.config/lxsession/LXDE-pi
+nano /home/epf/.config/lxsession/LXDE-pi/autostart
+
+@chromium-browser --noerrdialogs --disable-infobars --kiosk http://localhost:5173
+
 
 
 
