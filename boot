@@ -47,8 +47,16 @@ sudo systemctl disable frontend.service
 sudo systemctl disable backend.service
 
 # open the browser
-mkdir -p /home/epf/.config/lxsession/LXDE-pi
+mkdir -p /home/epf/.config/autostart
+mkdir -p /home/epf/.config/autostart
 nano /home/epf/.config/lxsession/LXDE-pi/autostart
+nano /home/epf/.config/autostart/chromium-kiosk.desktop
+
+[Desktop Entry]
+Type=Application
+Name=Chromium Kiosk
+Exec=sh -c "sleep 10 && chromium-browser --noerrdialogs --disable-infobars --kiosk http://localhost:5173"
+X-GNOME-Autostart-enabled=true
 
 @chromium-browser --noerrdialogs --disable-infobars --kiosk http://localhost:5173
 @bash -c "sleep 20 && chromium-browser --noerrdialogs --disable-infobars --kiosk http://localhost:5173"
