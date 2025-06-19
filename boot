@@ -49,3 +49,21 @@ sudo systemctl disable backend.service
 # open the browser
 nano ~/.config/lxsession/LXDE-pi/autostart
 @chromium-browser --noerrdialogs --kiosk http://localhost:5173
+
+
+
+
+
+# trash error code
+× backend.service - My Backend Python Service
+     Loaded: loaded (/etc/systemd/system/backend.service; enabled; preset: enabled)
+     Active: failed (Result: exit-code) since Thu 2025-06-19 10:12:53 CEST; 11min ago
+   Duration: 301ms
+   Main PID: 3952 (code=exited, status=1/FAILURE)
+        CPU: 292ms
+
+Jun 19 10:12:53 raspberrypi systemd[1]: backend.service: Scheduled restart job, restart counter is at 5.
+Jun 19 10:12:53 raspberrypi systemd[1]: Stopped backend.service - My Backend Python Service.
+Jun 19 10:12:53 raspberrypi systemd[1]: backend.service: Start request repeated too quickly.
+Jun 19 10:12:53 raspberrypi systemd[1]: backend.service: Failed with result 'exit-code'.
+Jun 19 10:12:53 raspberrypi systemd[1]: Failed to start backend.service - My Backend Python Service.
