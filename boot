@@ -7,8 +7,8 @@ After=network.target
 
 [Service]
 Type=simple
-User=pi
-WorkingDirectory=/home/pi/my_project/frontend
+User=epf
+WorkingDirectory=/home/epf/robot/EPF_robot-Watson277-speakcommand-1/frontend
 ExecStart=/bin/bash -c 'npm run dev'
 Restart=always
 
@@ -23,9 +23,9 @@ Description=My Backend Python Service
 After=network.target
 
 [Service]
-User=pi
-WorkingDirectory=/home/pi/my_project/backend
-ExecStart=/usr/bin/python3 /home/pi/my_project/backend/main.py
+User=epf
+WorkingDirectory=/home/epf/robot/EPF_robot-Watson277-speakcommand-1/backend
+ExecStart=/usr/bin/python3 /home/epf/robot/EPF_robot-Watson277-speakcommand-1/backend/main.py
 Restart=always
 
 [Install]
