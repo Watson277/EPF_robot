@@ -1,33 +1,35 @@
 import threading
 import time
 import asyncio
-import uvicorn
-
+import uvicorn 
 from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
-
-from api.battery import router as battery_router
-from api.recognize_api import router as recognize_router
+from api.voice_server import run_speech_once
+from button_speak import monitor_button_state
 from api.time import router as time_router 
-from control import movement, button, adc
-import server  # 引用你写的 WebSocket 服务模块（server.py）
+from api.time import router as time_router 
+from api.api_server import router as dialog_router
+from button_server import router as gpio_router
+import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'control')))
+from control import oeil
 
 app = FastAPI()
 
-# 配置跨域
+# cross domain
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], allow_credentials=True,
     allow_methods=["*"], allow_headers=["*"]
 )
 
-# 挂载 API 路由
-app.include_router(recognize_router)
-app.include_router(battery_router)
+# mount api router
 app.include_router(time_router)
+app.include_router(gpio_router)
+app.include_router(dialog_router)
 
-
-# WebSocket 端点（可以删去，改由 server.py 管理）
+# WebSocket 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
@@ -35,37 +37,20 @@ async def websocket_endpoint(websocket: WebSocket):
         data = await websocket.receive_text()
         await websocket.send_text(f"Echo: {data}")
 
-# 后台线程：运动控制
-def run_movement_loop():
-    while True:
-        movement.check_and_move()
-        time.sleep(0.1)
 
-# 后台线程：按钮监听
-def run_button_loop():
-    while True:
-        button.listen_buttons()
-        time.sleep(0.1)
 
-# 后台线程：电池电量检测
-def run_adc_loop():
-    while True:
-        adc.read_battery()
-        time.sleep(5)
-
-# 🧠 运行 WebSocket 服务
-def run_websocket_server():
-    asyncio.run(server.main())  # 注意 server.py 中要定义 main() 协程
-
-# 🚀 主函数
+# main fuction
 if __name__ == "__main__":
-    # 启动控制模块线程
-    threading.Thread(target=run_movement_loop, daemon=True).start()
-    threading.Thread(target=run_button_loop, daemon=True).start()
+    # start thread
+    #threading.Thread(target=oeil.action_clignement_repos, daemon=True).start()
+    threading.Thread(target=monitor_button_state, daemon=True).start()
     # threading.Thread(target=run_adc_loop, daemon=True).start()
+    #threading.Thread(target=run_speech_once, daemon=True).start()
 
-    # 启动 WebSocket 服务线程
-    threading.Thread(target=run_websocket_server, daemon=True).start()
+    # start WebSocket process
+    #threading.Thread(target=run_websocket_server, daemon=True).start()
 
-    # 启动 FastAPI HTTP 服务（主线程）
+    # start FastAPI HTTP service（main process）
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+

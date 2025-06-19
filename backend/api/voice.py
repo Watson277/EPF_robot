@@ -1,84 +1,109 @@
 import requests
 import pyttsx3
 import speech_recognition as sr
-import mouvement as mv
 import json
-import time
+import os
+import sys
 
-engine = pyttsx3.init()
-url = 'http://10.2.60.211:8000/reponse'  # 确保 IP 和端口正确
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from control import avancer2s as mv
+
+from control import speech
+
+tts_engine = pyttsx3.init()
+voices = tts_engine.getProperty('voices')
+for index, voice in enumerate(voices):
+    tts_engine.setProperty('voice', voices[29].id)
+
+
+
+
+url = 'http://10.2.60.80' \
+':8000/reponse'
+microphone = sr.Microphone()
 r = sr.Recognizer()
 
-function_map = {
-    "avancer": mv.avancer,
-    "reculer": mv.reculer
+with sr.Microphone() as source:
+    print("Parlez...")
+    audio = r.listen(source)
+
+    try:
+        text = r.recognize_google(audio, language="fr-FR")
+        print("Texte reconnu :", text)
+    except sr.UnknownValueError:
+        print("Impossible de comprendre l'audio.")
+    except sr.RequestError as e:
+        print(f"Erreur de requête : {e}")
+
+function_map={
+    "avancer":mv.avancer,
+    "reculer":mv.reculer,
+    "gauche":mv.gauche,
+    "droite":mv.droite,
+    "presentation":speech.presentation
 }
 
-def run_speech_loop():
-    while True:
-        with sr.Microphone() as source:
-            print("🎤 Parlez...")
-            audio = r.listen(source)
-
-            try:
-                text = r.recognize_google(audio, language="fr-FR")
-                print("Texte reconnu :", text)
-            except sr.UnknownValueError:
-                print("Impossible de comprendre l'audio.")
-                continue
-            except sr.RequestError as e:
-                print(f"Erreur de requête : {e}")
-                continue
-
-        question = f"""
+question = f"""
 Tu es un assistant contrôlant un robot. À chaque fois qu'on te pose une question ou une commande, tu DOIS répondre avec un JSON.
 
 - Si c'est une question (ex : "Quelle est la mission de l'EPF ?") répond grace au contexte donné et renvoie :
   {{
     "type": "answer",
-    "content": "L’EPF forme des ingénieurs généralistes capables de s’adapter à de nombreux domaines..."
+    "content": "L’EPF forme des ingénieurs généralistes capables de s’adapter à de nombreux domaines...>"
   }}
 
-- Si c'est une commande (ex : "Avance de 2 mètres"), renvoie :
+- Si c'est une commande de direction (ex : "va a gauche !") ou (ex: "tourne a gauche"), renvoie :
   {{
     "type": "function_call",
-    "function": "avancer",
-    "arguments": {{
-      "distance": 2.0
-    }}
+    "function": "gauche"
+  }}
+
+  - Si c'est une commande de deplacement (ex: "avance !"), renvoie :
+  {{
+    "type": "function_call",
+    "function": "avancer"
+  }}
+
+  - Si c'est une commande pour te présenter (ex: "Presente-toi !"), renvoie :
+  {{
+    "type": "function_call",
+    "function": "presentation"
   }}
 
 Texte utilisateur : {text}
 """
-        try:
-            reponse = requests.get(url, params={"prompt": question})
-            raw_json = reponse.json()
-            print("🔍 JSON reçu :", raw_json)
-        except Exception as e:
-            print("❌ Erreur de requête ou de parsing JSON :", e)
-            continue
 
-        if isinstance(raw_json, str):
-            try:
-                data = json.loads(raw_json)
-            except Exception as e:
-                print("❌ Erreur de parsing JSON string :", e)
-                continue
-        else:
-            data = raw_json
+reponse = requests.get(url,params={"prompt" : question})
+print(reponse.json())
 
-        if data["type"] == "function_call":
-            func = data["function"]
-            args = data["arguments"]
-            if func in function_map:
-                function_map[func](**args)
-            else:
-                print("❓ Fonction inconnue :", func)
-        elif data["type"] == "answer":
-            print("💬 Réponse :", data["content"])
-            engine.say(data["content"])
-            engine.runAndWait()
-        else:
-            print("⚠️ Réponse inattendue :", data)
 
-        time.sleep(1)  # 避免过于频繁地录音
+raw_json = reponse.json()  
+print("🔍 JSON reçu :", raw_json)
+
+if isinstance(raw_json, str):
+    try:
+        data = json.loads(raw_json)
+    except Exception as e:
+        print("Erreur de parsing JSON :", e)
+        exit()
+else:
+    data = raw_json  
+
+if data["type"] == "function_call":
+    func = data["function"]
+    if func in function_map:
+        function_map[func]()
+    else:
+        print(" Fonction inconnue :", func)
+elif data["type"] == "answer":
+    print(" Réponse :", data["content"])
+    rate =tts_engine.getPron_speech_once()('rate')
+    tts_engine.setProperty('rate',rate-50)
+    volume =tts_engine.getProperty('volume')
+    tts_engine.setProperty('volume',volume-0.70)
+    tts_engine.say(data["content"])
+    tts_engine.runAndWait()
+else:
+    print(" Réponse inattendue :", data)
+

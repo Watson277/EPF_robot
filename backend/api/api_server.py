@@ -1,6 +1,6 @@
-# routes/dialog_api.py
+
 from fastapi import APIRouter
-import dialog_state
+import variables.dialog_state as dialog_state
 
 router = APIRouter()
 
